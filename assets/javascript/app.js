@@ -3,10 +3,39 @@ var numberOfGifs = 5;
 var card;
 var header;
 var cardBody;
-
+var favoriteIsClicked = false;
+var removeIsClicked = false;
+var imgURL;
+// Enter was refreshing my page after form submit. This blocks the use of enter.
 $('form').keypress(function(event) { 
     return event.keyCode != 13;
 }); 
+
+$("#favoriteButton").on("click",function(){
+
+    if (favoriteIsClicked !== true){
+    favoriteIsClicked = true;
+    $(".gif").attr("id","selectable");}
+    else{
+    favoriteIsClicked = false;
+    $(".gif").removeAttr("id");
+    }
+})
+$("#removeButton").on("click", function(){
+
+    if (removeIsClicked !== true){ 
+        removeIsClicked = true;
+        $(".gif").attr("id","removable")
+        let x = $("<div>");
+        x.text("x")
+        x.attr("class", "delete rounded");
+        $(".imgHolder").prepend(x);}
+        else{
+        removeIsClicked = false;
+        $(".gif").removeAttr("id", "removable");
+        $(".delete").remove();
+        };
+})
 
 $("#addButton").on("click",function() {
     var input = $("#searchTerm").val();
@@ -14,7 +43,6 @@ $("#addButton").on("click",function() {
         alert("Please input a search term.")
         return;
     }
-
     numberOfGifs = $("#numberOfGifs").val();
     let newButton = $("<button class= 'btn btn-primary'>")
     newButton.attr("id", "search");
@@ -30,7 +58,6 @@ $("#addButton").on("click",function() {
 function displayGifs(){
     var x = $(this).attr("data-type");
     numberOfGifs = $(this).attr("data-number");
-    console.log(numberOfGifs)
     var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + x + "&api_key=cnXrAkFmWysKGEIn94PothosRcb7XWYW&limit="+ numberOfGifs;
 
         $.ajax({
@@ -43,9 +70,7 @@ function displayGifs(){
             let header = $("<div class='card-header'>");
             let cardBody = $("<div class='card-body'>")
             for (var i = 0; i < numberOfGifs; i++){
-            var imgURL = response.data[i].images.fixed_width_still.url;
-            console.log(imgURL); 
-
+            imgURL = response.data[i].images.fixed_width_still.url;   
             header.text(numberOfGifs + " " + x + " Gifs");
             let image = $("<img>").attr("src", imgURL);
             image.attr("class", "gif rounded");
@@ -60,19 +85,80 @@ function displayGifs(){
         $("#gifArea").append(card);
         
         })};
-       function animateGif() {
-            // The attr jQuery method allows us to get or set the value of any attribute on our HTML element
-            var state = $(this).attr("data-state");
-            // If the clicked image's state is still, update its src attribute to what its data-animate value is.
-            // Then, set the image's data-state to animate
-            // Else set src to the data-still value
-            if (state === "pause") {
-              $(this).attr("src", $(this).attr("data-play"));
-              $(this).attr("data-state", "play");
-            } else {
-              $(this).attr("src", $(this).attr("data-pause"));
-              $(this).attr("data-state", "pause");
-            }
-          };
-        $(document).on("click", "#search", displayGifs);
-        $(document).on("click", ".gif", animateGif);
+// creates a method insert in order to insert _s into the src url making it a still image
+String.prototype.insert = function (index, string) {
+    if (index > 0){
+    return this.substring(0, index) + string + this.substring(index, this.length)};
+};
+function renderGifs(list){
+        let card = $("<div class ='card'>");
+        let header = $("<div class='card-header'>");
+        let cardBody = $("<div class='card-body'>");
+        header.text("Favorites");
+        for (let i = 0; i < list.length; i++){
+            let image = $("<img>").attr("src", list[i]);
+            image.attr("class", "gif rounded favorite");
+            image.attr("data-state", "play");
+            let still = list[i].insert(49, "_s");
+            image.attr("data-play", list[i]);
+            image.attr("data-pause", still);
+            let div = $("<div class= 'imgHolder'>")
+            div.append(image);
+            cardBody.append(div);
+        }
+        
+        header.append(cardBody);
+        card.append(header);
+        $("#gifArea").prepend(card);
+    }
+
+function animateGif() {
+    var state = $(this).attr("data-state");
+    if (state === "pause") {
+        $(this).attr("src", $(this).attr("data-play"));
+        $(this).attr("data-state", "play");
+        }
+    else {
+        $(this).attr("src", $(this).attr("data-pause"));
+        $(this).attr("data-state", "pause");
+        }
+    };
+
+function saveFavorites(){
+    let img = $(this).attr("data-play");
+    favoriteGifs.push(img);
+    localStorage.setItem("savedGifs", JSON.stringify(img));
+    favoriteGifs.push(img);
+    localStorage.setItem("savedGifs", JSON.stringify(favoriteGifs))
+    renderGifs(favoriteGifs);
+    }
+
+function removeFavorites(){
+    let favURL = $(this).siblings('.favorite').attr("data-play");
+    let index = favoriteGifs.indexOf(favURL);
+    console.log(favURL);
+    console.log(index);
+    favoriteGifs.splice(index, 1);
+    localStorage.setItem("savedGifs",JSON.stringify(favoriteGifs));
+    $(this).closest('.imgHolder').remove();
+  
+}
+        // Load the gifs from localstorage
+        // Using JSON.parse to turn the string retrieved from an array into a string
+    var favoriteGifs = JSON.parse(localStorage.getItem("savedGifs"));
+
+    //     // Checks to see if the gifs exists in localStorage and is an array currently
+    //     // If not, set a local list variable to an empty array
+
+    if (!Array.isArray(favoriteGifs)){
+        favoriteGifs = [];
+    }
+    
+
+    
+    $(document).on("click", "#search", displayGifs);
+    $(document).on("click", ".gif", animateGif);
+    $(document).on("click", "#selectable", saveFavorites);
+    $(document).on("click", ".delete", removeFavorites);
+    console.log(favoriteGifs);
+    renderGifs(favoriteGifs);
