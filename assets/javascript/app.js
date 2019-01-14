@@ -15,10 +15,10 @@ $("#favoriteButton").on("click",function(){
 
     if (favoriteIsClicked !== true){
     favoriteIsClicked = true;
-    $(".gif").attr("id","selectable");}
+    $(".notFavorite").attr("id","selectable");}
     else{
     favoriteIsClicked = false;
-    $(".gif").removeAttr("id");
+    $(".notFavorite").removeAttr("id");
     }
 })
 $("#removeButton").on("click", function(){
@@ -73,7 +73,7 @@ function displayGifs(){
             imgURL = response.data[i].images.fixed_width_still.url;   
             header.text(numberOfGifs + " " + x + " Gifs");
             let image = $("<img>").attr("src", imgURL);
-            image.attr("class", "gif rounded");
+            image.attr("class", "gif rounded notFavorite");
             image.attr("data-state", "pause");
             image.attr("data-pause", imgURL);
             image.attr("data-play", response.data[i].images.fixed_width.url);
@@ -91,15 +91,17 @@ String.prototype.insert = function (index, string) {
     return this.substring(0, index) + string + this.substring(index, this.length)};
 };
 function renderGifs(list){
-        let card = $("<div class ='card'>");
+        $(".favoriteCard").remove();
+        let card = $("<div class ='card favoriteCard'>");
         let header = $("<div class='card-header'>");
         let cardBody = $("<div class='card-body'>");
         header.text("Favorites");
         for (let i = 0; i < list.length; i++){
-            let image = $("<img>").attr("src", list[i]);
-            image.attr("class", "gif rounded favorite");
-            image.attr("data-state", "play");
             let still = list[i].insert(49, "_s");
+            let image = $("<img>").attr("src", still);
+            image.attr("class", "gif rounded favorite");
+            image.attr("data-state", "pause");
+           
             image.attr("data-play", list[i]);
             image.attr("data-pause", still);
             let div = $("<div class= 'imgHolder'>")
@@ -128,7 +130,7 @@ function saveFavorites(){
     let img = $(this).attr("data-play");
     favoriteGifs.push(img);
     localStorage.setItem("savedGifs", JSON.stringify(img));
-    favoriteGifs.push(img);
+
     localStorage.setItem("savedGifs", JSON.stringify(favoriteGifs))
     renderGifs(favoriteGifs);
     }
