@@ -58,7 +58,7 @@ $("#addButton").on("click",function() {
 function displayGifs(){
     var x = $(this).attr("data-type");
     numberOfGifs = $(this).attr("data-number");
-    var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + x + "&api_key=cnXrAkFmWysKGEIn94PothosRcb7XWYW&limit="+ numberOfGifs;
+    var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + x + "&api_key=cnXrAkFmWysKGEIn94PothosRcb7XWYW&limit="+ numberOfGifs;
 
         $.ajax({
           url: queryURL,
