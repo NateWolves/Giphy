@@ -97,7 +97,8 @@ function renderGifs(list){
         let cardBody = $("<div class='card-body'>");
         header.text("Favorites");
         for (let i = 0; i < list.length; i++){
-            let still = list[i].insert(49, "_s");
+            let insertNumber = list[i].length - 4;
+            let still = list[i].insert(insertNumber, "_s");
             let image = $("<img>").attr("src", still);
             image.attr("class", "gif rounded favorite");
             image.attr("data-state", "pause");
